@@ -14,7 +14,7 @@ library(tidyr)
 
 
 
-r <- GET("http://localhost:9000/getdata")
+r <- GET("http://18.206.88.12:9000/getdata")
   #convert to text object using httr
 raise <- content(r, as="text")
   #parse JSON
