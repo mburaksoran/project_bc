@@ -10,25 +10,6 @@ library(dplyr)
 library(stringr)
 library(tidyr)
 
-#request a list of companies currently fundraising using httr
-
-#new <- 1
-#while (length(new) <= 5) {
-#  r <- GET("http://18.206.88.12:9000/getdata")
-#  #convert to text object using httr
-#  raise <- content(r, as="text")
-#  #parse JSON
-#  new <- fromJSON(raise)
-#  Sys.sleep(10)
-#}
-
-
-#store <-  new %>% filter(datacomefrom == 1)
-#store$time<-as.POSIXct(store$time,tz="Europe/Istanbul",format="%Y-%m-%d %H:%M:%OS")
-#system <- new %>% filter(datacomefrom == 2) 
-#system$time<-as.POSIXct(system$time,tz="Europe/Istanbul",format= "%d.%m.%y %H:%M")
-#final <- rbind(store,system)
-#final$mnth<-month(final$time) 
 
 ui <- dashboardPage(
       header = dashboardHeader(),
@@ -59,9 +40,28 @@ ui <- dashboardPage(
 )
     
 server <- function(input, output) {
-      
+  
+  filtered_reader_df <- reactive({
+    r <- GET("http://18.206.88.12:9000/getdata")
+    #convert to text object using httr
+    raise <- content(r, as="text")
+    #parse JSON
+    new <- fromJSON(raise)
+    store <-  new %>% filter(datacomefrom == 1)
+    store$time<-as.POSIXct(store$time,tz="Europe/Istanbul",format="%Y-%m-%d %H:%M:%OS")
+    system <- new %>% filter(datacomefrom == 2) 
+    system$time<-as.POSIXct(system$time,tz="Europe/Istanbul",format= "%d.%m.%y %H:%M")
+    final <- rbind(store,system)
+    final$mnth<-month(final$time) 
+    if (length(r) > 5) {
+      final
+    }
+    
+    
+  })
       
       output$Total_Income_from_store <- renderbs4InfoBox({
+        final <- filtered_reader_df()
         df <- final %>% filter(datacomefrom == 1)
         value <- sum(df$payment)
         bs4InfoBox("Toplam Kazanç (Şube)",paste0(format(value,big.mark=",",scientific=FALSE)," ₺")
@@ -73,6 +73,7 @@ server <- function(input, output) {
       
       
       output$Total_Income_from_system <- renderbs4InfoBox({
+        final <- filtered_reader_df()
         df <- final %>% filter(datacomefrom == 2)
         value <- sum(df$payment)
         bs4InfoBox("Toplam Kazanç (Sistem)",paste0(format(value,big.mark=",",scientific=FALSE)," ₺")
@@ -83,6 +84,7 @@ server <- function(input, output) {
       
       
       output$system_Daily_mean_Income_Infobox1 <- renderbs4InfoBox({
+        final <- filtered_reader_df()
         df <- final %>% filter(datacomefrom == 2)
         value1 <- sum(df$payment)
         value <- value1/((as.numeric(max(df$time))-as.numeric(min(df$time)))/(24*60*60))
@@ -95,6 +97,7 @@ server <- function(input, output) {
       
       
       output$system_Weekly_mean_Income_Infobox2 <- renderbs4InfoBox({
+        final <- filtered_reader_df()
         df <- final %>% filter(datacomefrom == 2)
         value1 <- sum(df$payment)
         value <- value1/((as.numeric(max(df$time))-as.numeric(min(df$time)))/(24*60*60*7))
@@ -106,6 +109,7 @@ server <- function(input, output) {
       
       
       output$system_Monthly_mean_Income_Infobox3 <- renderbs4InfoBox({
+        final <- filtered_reader_df()
         df <- final %>% filter(datacomefrom == 2)
         value1 <- sum(df$payment)
         value <- value1/((as.numeric(max(df$time))-as.numeric(min(df$time)))/(24*60*60*30))
@@ -117,6 +121,7 @@ server <- function(input, output) {
       
       
       output$store_Daily_mean_Income_Infobox1 <- renderbs4InfoBox({
+        final <- filtered_reader_df()
         df <- final %>% filter(datacomefrom == 1)
         value1 <- sum(df$payment)
         value <- value1/((as.numeric(max(df$time))-as.numeric(min(df$time)))/(24*60*60))
@@ -128,6 +133,7 @@ server <- function(input, output) {
       
       
       output$store_Weekly_mean_Income_Infobox2 <- renderbs4InfoBox({
+        final <- filtered_reader_df()
         df <- final %>% filter(datacomefrom == 1)
         value1 <- sum(df$payment)
         value <- value1/((as.numeric(max(df$time))-as.numeric(min(df$time)))/(24*60*60*7))
@@ -140,6 +146,7 @@ server <- function(input, output) {
       
       
       output$store_Monthly_mean_Income_Infobox3 <- renderbs4InfoBox({
+        final <- filtered_reader_df()
         df <- final %>% filter(datacomefrom == 1)
         value1 <- sum(df$payment)
         value <- value1/((as.numeric(max(df$time))-as.numeric(min(df$time)))/(24*60*60*30))
@@ -151,6 +158,7 @@ server <- function(input, output) {
       
       
       output$total_bar_monthly<-renderEcharts4r({
+        final <- filtered_reader_df()
         
         newdf<-final %>% group_by(mnth,datacomefrom) %>% summarise(total = sum(payment,na.rm = T))
         
@@ -171,6 +179,7 @@ server <- function(input, output) {
       
       
       output$total_pie_<-renderEcharts4r({
+        final <- filtered_reader_df()
         n<-final$datacomefrom
         n<-gsub(1,"Şube",n)
         n<-gsub(2,"Sistem",n)
