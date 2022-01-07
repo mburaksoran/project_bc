@@ -13,7 +13,7 @@ library(tidyr)
 #request a list of companies currently fundraising using httr
 
 new <- 1
-while (length(new) == 1) {
+while (length(new) <= 5) {
   r <- GET("http://18.206.88.12:9000/getdata")
   #convert to text object using httr
   raise <- content(r, as="text")
