@@ -12,23 +12,23 @@ library(tidyr)
 
 #request a list of companies currently fundraising using httr
 
-new <- 1
-while (length(new) <= 5) {
-  r <- GET("http://18.206.88.12:9000/getdata")
-  #convert to text object using httr
-  raise <- content(r, as="text")
-  #parse JSON
-  new <- fromJSON(raise)
-  Sys.sleep(10)
-}
+#new <- 1
+#while (length(new) <= 5) {
+#  r <- GET("http://18.206.88.12:9000/getdata")
+#  #convert to text object using httr
+#  raise <- content(r, as="text")
+#  #parse JSON
+#  new <- fromJSON(raise)
+#  Sys.sleep(10)
+#}
 
 
-store <-  new %>% filter(datacomefrom == 1)
-store$time<-as.POSIXct(store$time,tz="Europe/Istanbul",format="%Y-%m-%d %H:%M:%OS")
-system <- new %>% filter(datacomefrom == 2) 
-system$time<-as.POSIXct(system$time,tz="Europe/Istanbul",format= "%d.%m.%y %H:%M")
-final <- rbind(store,system)
-final$mnth<-month(final$time) 
+#store <-  new %>% filter(datacomefrom == 1)
+#store$time<-as.POSIXct(store$time,tz="Europe/Istanbul",format="%Y-%m-%d %H:%M:%OS")
+#system <- new %>% filter(datacomefrom == 2) 
+#system$time<-as.POSIXct(system$time,tz="Europe/Istanbul",format= "%d.%m.%y %H:%M")
+#final <- rbind(store,system)
+#final$mnth<-month(final$time) 
 
 ui <- dashboardPage(
       header = dashboardHeader(),
