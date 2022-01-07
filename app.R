@@ -13,12 +13,21 @@ library(tidyr)
 #request a list of companies currently fundraising using httr
 
 
-
-r <- GET("http://18.206.88.12:9000/getdata")
+r <- GET("http://localhost:9000/getdata")
   #convert to text object using httr
 raise <- content(r, as="text")
   #parse JSON
 new <- fromJSON(raise)
+while (length(new) == 0) {
+  r <- GET("http://localhost:9000/getdata")
+  #convert to text object using httr
+  raise <- content(r, as="text")
+  #parse JSON
+  new <- fromJSON(raise)
+  Sys.sleep(10)
+}
+
+
 store <-  new %>% filter(datacomefrom == 1)
 store$time<-as.POSIXct(store$time,tz="Europe/Istanbul",format="%Y-%m-%d %H:%M:%OS")
 system <- new %>% filter(datacomefrom == 2) 
